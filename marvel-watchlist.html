@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marvel Watch Order — Carnet de visionnage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Archivo:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1016;
+    --panel:#1b1d2a;
+    --panel-2:#22243499;
+    --edge:#05060a;
+    --hero-red:#e9384d;
+    --gold:#f5c518;
+    --paper:#edeae0;
+    --muted:#8d90a5;
+    --seen-fade:0.42;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 1px 1px, #ffffff10 1px, transparent 1.6px) 0 0/16px 16px,
+      var(--ink);
+    color:var(--paper);
+    font-family:'Archivo',sans-serif;
+    padding-bottom:60px;
+  }
+  ::selection{background:var(--hero-red);color:#fff;}
+
+  header{
+    position:sticky;top:0;z-index:50;
+    background:linear-gradient(180deg,#0f1016 80%, #0f101600);
+    padding:22px 24px 14px;
+    border-bottom:4px solid var(--edge);
+    box-shadow:0 6px 0 var(--panel-2);
+  }
+  .title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  h1{
+    font-family:'Bangers',cursive;
+    font-size:2.6rem;
+    letter-spacing:1px;
+    margin:0;
+    color:var(--gold);
+    text-shadow: 3px 3px 0 var(--hero-red), 5px 5px 0 var(--edge);
+    transform:rotate(-1deg);
+  }
+  .subtitle{
+    font-size:0.82rem;
+    color:var(--muted);
+    margin-top:2px;
+    font-weight:600;
+    letter-spacing:0.4px;
+  }
+  #settingsBtn{
+    background:var(--panel);
+    border:2px solid var(--edge);
+    color:var(--paper);
+    border-radius:50%;
+    width:40px;
+    height:40px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.15rem;
+    cursor:pointer;
+    line-height:1;
+  }
+  #settingsBtn:hover{border-color:var(--gold);}
+
+  .progress-wrap{margin-top:16px;}
+  .progress-label{
+    display:flex;justify-content:space-between;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.75rem;color:var(--muted);margin-bottom:4px;
+  }
+  .progress-bar{
+    height:14px;background:var(--panel);border:2px solid var(--edge);border-radius:20px;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;background:repeating-linear-gradient(45deg, var(--hero-red), var(--hero-red) 10px, #ff5468 10px, #ff5468 20px);
+    transition:width 0.4s ease;
+  }
+
+  main{padding:28px 24px 10px;max-width:1280px;margin:0 auto;}
+
+  .universe-block{margin-bottom:44px;}
+  .universe-header{
+    font-family:'Bangers',cursive;
+    font-size:1.5rem;
+    color:var(--ink);
+    background:var(--gold);
+    display:inline-block;
+    padding:5px 18px 7px;
+    transform:skewX(-6deg);
+    letter-spacing:1px;
+    border:3px solid var(--edge);
+    margin-bottom:2px;
+  }
+  .universe-sub{
+    font-size:0.8rem;color:var(--muted);margin:8px 0 18px;max-width:760px;line-height:1.5;
+  }
+  .phase-title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--hero-red);
+    margin:22px 0 10px;
+    padding-bottom:6px;
+    border-bottom:2px dashed #3a3d52;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(168px,1fr));
+    gap:16px;
+  }
+
+  .tile{
+    background:var(--panel);
+    border:3px solid var(--edge);
+    border-radius:6px;
+    overflow:hidden;
+    position:relative;
+    transition:transform 0.15s ease, opacity 0.3s ease, filter 0.3s ease;
+    display:flex;flex-direction:column;
+  }
+  .tile:hover{transform:translateY(-4px);}
+  .tile.is-seen{opacity:var(--seen-fade);filter:grayscale(65%);}
+  .tile.is-seen:hover{opacity:0.75;filter:grayscale(30%);}
+
+  .poster-wrap{
+    position:relative;
+    aspect-ratio:2/3;
+    background:linear-gradient(135deg,#2a2c3d,#1b1d2a);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .poster-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+  .poster-placeholder{
+    font-family:'Bangers',cursive;
+    color:var(--muted);
+    font-size:0.95rem;
+    text-align:center;
+    padding:10px;
+    line-height:1.3;
+  }
+  .issue-tag{
+    position:absolute;top:6px;left:6px;
+    background:var(--hero-red);
+    color:#fff;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:0.68rem;
+    padding:2px 6px;
+    border-radius:3px;
+    border:1.5px solid var(--edge);
+  }
+  .type-tag{
+    position:absolute;top:6px;right:6px;
+    background:var(--ink);
+    color:var(--gold);
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.62rem;
+    font-weight:700;
+    padding:2px 6px;
+    border-radius:3px;
+    border:1.5px solid var(--edge);
+    text-transform:uppercase;
+  }
+  .seen-badge{
+    position:absolute;bottom:6px;right:6px;
+    background:var(--gold);
+    color:var(--ink);
+    font-family:'Bangers',cursive;
+    font-size:0.95rem;
+    padding:1px 10px;
+    border-radius:3px;
+    border:2px solid var(--edge);
+    transform:rotate(-8deg);
+    letter-spacing:1px;
+  }
+
+  .tile-info{padding:10px 10px 12px;display:flex;flex-direction:column;gap:6px;flex:1;}
+  .tile-title{font-size:0.82rem;font-weight:700;line-height:1.25;min-height:2.4em;}
+  .tile-meta{
+    display:flex;justify-content:space-between;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.68rem;color:var(--muted);
+  }
+  .toggle-btn{
+    margin-top:auto;
+    background:transparent;
+    border:2px solid var(--hero-red);
+    color:var(--hero-red);
+    font-weight:700;
+    font-size:0.68rem;
+    padding:6px 4px;
+    border-radius:5px;
+    cursor:pointer;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+  }
+  .tile.is-seen .toggle-btn{
+    border-color:var(--gold);color:var(--gold);
+  }
+  .toggle-btn:hover{background:var(--hero-red);color:#fff;}
+  .tile.is-seen .toggle-btn:hover{background:var(--gold);color:var(--ink);}
+
+  .empty-state{
+    text-align:center;color:var(--muted);padding:60px 20px;font-family:'JetBrains Mono',monospace;
+  }
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:#000000cc;
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--panel);border:3px solid var(--edge);border-radius:10px;
+    max-width:440px;width:100%;padding:24px;
+  }
+  .modal h2{font-family:'Bangers',cursive;color:var(--gold);font-size:1.4rem;margin:0 0 14px;letter-spacing:1px;}
+  .modal p{font-size:0.82rem;color:var(--muted);line-height:1.5;}
+  .modal a{color:var(--gold);}
+  .modal input{
+    width:100%;padding:10px;border-radius:6px;border:2px solid var(--edge);
+    background:var(--ink);color:var(--paper);font-family:'JetBrains Mono',monospace;font-size:0.8rem;margin:10px 0 16px;
+  }
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+  .modal-actions button{
+    padding:9px 16px;border-radius:6px;border:2px solid var(--edge);
+    font-weight:700;cursor:pointer;font-size:0.8rem;
+  }
+  .btn-primary{background:var(--gold);color:var(--ink);}
+  .btn-secondary{background:transparent;color:var(--muted);}
+  .btn-danger{background:var(--hero-red);color:#fff;border-color:var(--edge);}
+  .modal-divider{border:none;border-top:2px dashed #3a3d52;margin:18px 0;}
+  .backup-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  @media (max-width:600px){
+    h1{font-size:1.9rem;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <div>
+      <h1>MARVEL WATCH ORDER</h1>
+      <div class="subtitle">Ton carnet de visionnage — MCU · X-Men · Spider-Man</div>
+    </div>
+    <button id="settingsBtn" title="Réglages & affiches" aria-label="Réglages & affiches">⚙</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progressText">0 / 0 visionnés</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h2>Réglages</h2>
+    <p>
+      Pour afficher automatiquement les affiches, colle ici une clé API TMDB (gratuite).
+      Crée un compte sur <a href="https://www.themoviedb.org/signup" target="_blank">themoviedb.org</a>,
+      puis récupère ta clé "API Key (v3 auth)" dans
+      <a href="https://www.themoviedb.org/settings/api" target="_blank">Paramètres → API</a>.
+      Sans clé, les tuiles s'affichent en mode texte.
+    </p>
+    <input type="text" id="apiKeyInput" placeholder="Colle ta clé TMDB ici">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="closeModalBtn">Fermer</button>
+      <button class="btn-primary" id="saveKeyBtn">Enregistrer & charger les affiches</button>
+    </div>
+
+    <hr class="modal-divider">
+    <p><strong>Sauvegarde</strong> — exporte ta progression (films vus) pour la retrouver sur un autre appareil.</p>
+    <div class="backup-row">
+      <button class="btn-secondary" id="exportBtn">⬇ Exporter (JSON)</button>
+      <button class="btn-secondary" id="importBtn">⬆ Importer</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+    <hr class="modal-divider">
+    <button class="btn-danger" id="resetBtn">Réinitialiser toute la progression</button>
+  </div>
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+// universe: MCU / X-Men / Spider-Man
+// type: film / série
+const DATA = [
+// ===== MCU — PHASE 1 =====
+{id:"mcu01",order:1,universe:"MCU",phase:"Phase 1 — Les origines",title:"Iron Man",year:2008,type:"film",duration:126},
+{id:"mcu02",order:2,universe:"MCU",phase:"Phase 1 — Les origines",title:"The Incredible Hulk",year:2008,type:"film",duration:112},
+{id:"mcu03",order:3,universe:"MCU",phase:"Phase 1 — Les origines",title:"Iron Man 2",year:2010,type:"film",duration:124},
+{id:"mcu04",order:4,universe:"MCU",phase:"Phase 1 — Les origines",title:"Thor",year:2011,type:"film",duration:115},
+{id:"mcu05",order:5,universe:"MCU",phase:"Phase 1 — Les origines",title:"Captain America: The First Avenger",year:2011,type:"film",duration:124},
+{id:"mcu06",order:6,universe:"MCU",phase:"Phase 1 — Les origines",title:"The Avengers",year:2012,type:"film",duration:143},
+// ===== PHASE 2 =====
+{id:"mcu07",order:7,universe:"MCU",phase:"Phase 2 — L'expansion",title:"Iron Man 3",year:2013,type:"film",duration:130},
+{id:"mcu08",order:8,universe:"MCU",phase:"Phase 2 — L'expansion",title:"Thor: The Dark World",year:2013,type:"film",duration:112},
+{id:"mcu09",order:9,universe:"MCU",phase:"Phase 2 — L'expansion",title:"Captain America: The Winter Soldier",year:2014,type:"film",duration:136},
+{id:"mcu10",order:10,universe:"MCU",phase:"Phase 2 — L'expansion",title:"Guardians of the Galaxy",year:2014,type:"film",duration:121},
+{id:"mcu11",order:11,universe:"MCU",phase:"Phase 2 — L'expansion",title:"Avengers: Age of Ultron",year:2015,type:"film",duration:141},
+{id:"mcu12",order:12,universe:"MCU",phase:"Phase 2 — L'expansion",title:"Ant-Man",year:2015,type:"film",duration:117},
+// ===== PHASE 3 =====
+{id:"mcu13",order:13,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Captain America: Civil War",year:2016,type:"film",duration:147},
+{id:"mcu14",order:14,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Doctor Strange",year:2016,type:"film",duration:115},
+{id:"mcu15",order:15,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Guardians of the Galaxy Vol. 2",year:2017,type:"film",duration:136},
+{id:"mcu16",order:16,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Spider-Man: Homecoming",year:2017,type:"film",duration:133},
+{id:"mcu17",order:17,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Thor: Ragnarok",year:2017,type:"film",duration:130},
+{id:"mcu18",order:18,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Black Panther",year:2018,type:"film",duration:134},
+{id:"mcu19",order:19,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Avengers: Infinity War",year:2018,type:"film",duration:149},
+{id:"mcu20",order:20,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Ant-Man and the Wasp",year:2018,type:"film",duration:118},
+{id:"mcu21",order:21,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Captain Marvel",year:2019,type:"film",duration:124},
+{id:"mcu22",order:22,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Avengers: Endgame",year:2019,type:"film",duration:181},
+{id:"mcu23",order:23,universe:"MCU",phase:"Phase 3 — L'apogée (Infinity Saga)",title:"Spider-Man: Far From Home",year:2019,type:"film",duration:129},
+// ===== PHASE 4 =====
+{id:"mcu24",order:24,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"WandaVision",year:2021,type:"série",duration:355},
+{id:"mcu25",order:25,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"The Falcon and the Winter Soldier",year:2021,type:"série",duration:290},
+{id:"mcu26",order:26,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Loki",year:2021,type:"série",duration:290},
+{id:"mcu27",order:27,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Black Widow",year:2021,type:"film",duration:134},
+{id:"mcu28",order:28,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"What If...?",year:2021,type:"série",duration:230},
+{id:"mcu29",order:29,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Shang-Chi and the Legend of the Ten Rings",year:2021,type:"film",duration:132},
+{id:"mcu30",order:30,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Eternals",year:2021,type:"film",duration:156},
+{id:"mcu31",order:31,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Hawkeye",year:2021,type:"série",duration:290},
+{id:"mcu32",order:32,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Spider-Man: No Way Home",year:2021,type:"film",duration:148},
+{id:"mcu33",order:33,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Moon Knight",year:2022,type:"série",duration:290},
+{id:"mcu34",order:34,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Doctor Strange in the Multiverse of Madness",year:2022,type:"film",duration:126},
+{id:"mcu35",order:35,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Ms. Marvel",year:2022,type:"série",duration:170},
+{id:"mcu36",order:36,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Thor: Love and Thunder",year:2022,type:"film",duration:119},
+{id:"mcu37",order:37,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"She-Hulk: Attorney at Law",year:2022,type:"série",duration:220},
+{id:"mcu38",order:38,universe:"MCU",phase:"Phase 4 — Le Multivers s'ouvre",title:"Black Panther: Wakanda Forever",year:2022,type:"film",duration:161},
+// ===== PHASE 5 =====
+{id:"mcu39",order:39,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Ant-Man and the Wasp: Quantumania",year:2023,type:"film",duration:125},
+{id:"mcu40",order:40,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Guardians of the Galaxy Vol. 3",year:2023,type:"film",duration:150},
+{id:"mcu41",order:41,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Secret Invasion",year:2023,type:"série",duration:250},
+{id:"mcu42",order:42,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Loki (Saison 2)",year:2023,type:"série",duration:300},
+{id:"mcu43",order:43,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"The Marvels",year:2023,type:"film",duration:105},
+{id:"mcu44",order:44,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Echo",year:2024,type:"série",duration:215},
+{id:"mcu45",order:45,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Agatha All Along",year:2024,type:"série",duration:330},
+{id:"mcu46",order:46,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Deadpool & Wolverine",year:2024,type:"film",duration:128},
+{id:"mcu47",order:47,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Captain America: Brave New World",year:2025,type:"film",duration:118},
+{id:"mcu48",order:48,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Daredevil: Born Again",year:2025,type:"série",duration:380},
+{id:"mcu49",order:49,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Thunderbolts*",year:2025,type:"film",duration:127},
+{id:"mcu50",order:50,universe:"MCU",phase:"Phase 5 — Kang & au-delà",title:"Ironheart",year:2025,type:"série",duration:180},
+{id:"mcu51",order:51,universe:"MCU",phase:"Phase 6 — Vers Secret Wars",title:"The Fantastic Four: First Steps",year:2025,type:"film",duration:115},
+
+// ===== X-MEN (Fox) =====
+{id:"xm01",order:1,universe:"X-Men",phase:"Trilogie originelle",title:"X-Men",year:2000,type:"film",duration:104},
+{id:"xm02",order:2,universe:"X-Men",phase:"Trilogie originelle",title:"X2: X-Men United",year:2003,type:"film",duration:133},
+{id:"xm03",order:3,universe:"X-Men",phase:"Trilogie originelle",title:"X-Men: The Last Stand",year:2006,type:"film",duration:104},
+{id:"xm04",order:4,universe:"X-Men",phase:"Préquelles & spin-offs",title:"X-Men Origins: Wolverine",year:2009,type:"film",duration:107},
+{id:"xm05",order:5,universe:"X-Men",phase:"Préquelles & spin-offs",title:"X-Men: First Class",year:2011,type:"film",duration:131},
+{id:"xm06",order:6,universe:"X-Men",phase:"Préquelles & spin-offs",title:"The Wolverine",year:2013,type:"film",duration:126},
+{id:"xm07",order:7,universe:"X-Men",phase:"Préquelles & spin-offs",title:"X-Men: Days of Future Past",year:2014,type:"film",duration:132},
+{id:"xm08",order:8,universe:"X-Men",phase:"Nouvelle génération",title:"Deadpool",year:2016,type:"film",duration:108},
+{id:"xm09",order:9,universe:"X-Men",phase:"Nouvelle génération",title:"X-Men: Apocalypse",year:2016,type:"film",duration:144},
+{id:"xm10",order:10,universe:"X-Men",phase:"Nouvelle génération",title:"Logan",year:2017,type:"film",duration:137},
+{id:"xm11",order:11,universe:"X-Men",phase:"Nouvelle génération",title:"Deadpool 2",year:2018,type:"film",duration:119},
+{id:"xm12",order:12,universe:"X-Men",phase:"Fin de saga",title:"Dark Phoenix",year:2019,type:"film",duration:113},
+{id:"xm13",order:13,universe:"X-Men",phase:"Fin de saga",title:"The New Mutants",year:2020,type:"film",duration:94},
+
+// ===== SPIDER-MAN (Sony, hors MCU) =====
+{id:"sm01",order:1,universe:"Spider-Man",phase:"Trilogie Sam Raimi (Tobey Maguire)",title:"Spider-Man",year:2002,type:"film",duration:121},
+{id:"sm02",order:2,universe:"Spider-Man",phase:"Trilogie Sam Raimi (Tobey Maguire)",title:"Spider-Man 2",year:2004,type:"film",duration:127},
+{id:"sm03",order:3,universe:"Spider-Man",phase:"Trilogie Sam Raimi (Tobey Maguire)",title:"Spider-Man 3",year:2007,type:"film",duration:139},
+{id:"sm04",order:4,universe:"Spider-Man",phase:"Diptyque Andrew Garfield",title:"The Amazing Spider-Man",year:2012,type:"film",duration:136},
+{id:"sm05",order:5,universe:"Spider-Man",phase:"Diptyque Andrew Garfield",title:"The Amazing Spider-Man 2",year:2014,type:"film",duration:142},
+{id:"sm06",order:6,universe:"Spider-Man",phase:"Sony's Spider-Man Universe (SSU)",title:"Venom",year:2018,type:"film",duration:112},
+{id:"sm07",order:7,universe:"Spider-Man",phase:"Sony's Spider-Man Universe (SSU)",title:"Venom: Let There Be Carnage",year:2021,type:"film",duration:97},
+{id:"sm08",order:8,universe:"Spider-Man",phase:"Sony's Spider-Man Universe (SSU)",title:"Morbius",year:2022,type:"film",duration:104},
+{id:"sm09",order:9,universe:"Spider-Man",phase:"Sony's Spider-Man Universe (SSU)",title:"Madame Web",year:2024,type:"film",duration:116},
+{id:"sm10",order:10,universe:"Spider-Man",phase:"Sony's Spider-Man Universe (SSU)",title:"Venom: The Last Dance",year:2024,type:"film",duration:109},
+{id:"sm11",order:11,universe:"Spider-Man",phase:"Sony's Spider-Man Universe (SSU)",title:"Kraven the Hunter",year:2024,type:"film",duration:127},
+];
+
+const UNIVERSE_INTRO = {
+  "MCU":"L'univers principal. Suis les phases dans l'ordre : c'est celui dans lequel les films sont sortis, pensé pour qu'on comprenne les personnages et les liens entre eux au fur et à mesure.",
+  "X-Men":"Continuité indépendante du MCU (avant le rachat par Disney). Personnages et chronologie propres — à regarder comme une saga à part.",
+  "Spider-Man":"Les Spider-Man et le \"Sony's Spider-Man Universe\" (Venom, Morbius...) hors MCU : une autre continuité, avec ses propres règles."
+};
+
+/* ---------- STATE ---------- */
+const STORAGE_KEY = "marvelWatchlist_seen_v1";
+const APIKEY_STORAGE = "marvelWatchlist_tmdbKey_v1";
+const POSTER_CACHE_KEY = "marvelWatchlist_posterCache_v1";
+
+let seenSet = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+let posterCache = JSON.parse(localStorage.getItem(POSTER_CACHE_KEY) || "{}");
+let apiKey = localStorage.getItem(APIKEY_STORAGE) || "";
+
+
+
+/* ---------- RENDER ---------- */
+function formatDuration(min){
+  const h = Math.floor(min/60);
+  const m = min % 60;
+  if(h === 0) return `${m}min`;
+  return `${h}h${m.toString().padStart(2,'0')}`;
+}
+
+function groupData(items){
+  const universes = ["MCU","X-Men","Spider-Man"];
+  return universes.map(u => {
+    const uItems = items.filter(i => i.universe === u);
+    const phases = [...new Set(uItems.map(i => i.phase))];
+    return {
+      universe:u,
+      phases: phases.map(p => ({ phase:p, items: uItems.filter(i => i.phase === p) }))
+    };
+  }).filter(g => g.phases.length > 0);
+}
+
+function applyFilters(){
+  return DATA;
+}
+
+function render(){
+  const main = document.getElementById("main");
+  const filtered = applyFilters();
+  updateProgress();
+
+  if(filtered.length === 0){
+    main.innerHTML = `<div class="empty-state">Aucun titre ne correspond à ces filtres. 🔍</div>`;
+    return;
+  }
+
+  const grouped = groupData(filtered);
+  main.innerHTML = grouped.map(g => `
+    <section class="universe-block">
+      <div class="universe-header">${g.universe === "MCU" ? "MCU — Marvel Cinematic Universe" : g.universe === "X-Men" ? "X-Men (Univers Fox)" : "Spider-Man (Univers Sony)"}</div>
+      <div class="universe-sub">${UNIVERSE_INTRO[g.universe]}</div>
+      ${g.phases.map(ph => `
+        <div class="phase-title">${ph.phase}</div>
+        <div class="grid">
+          ${ph.items.map(item => renderTile(item)).join("")}
+        </div>
+      `).join("")}
+    </section>
+  `).join("");
+
+  loadPosters(filtered);
+}
+
+function renderTile(item){
+  const isSeen = seenSet.has(item.id);
+  const cacheKey = `${item.title}__${item.year}`;
+  const posterUrl = posterCache[cacheKey];
+  return `
+    <div class="tile ${isSeen ? 'is-seen' : ''}" data-id="${item.id}">
+      <div class="poster-wrap" id="poster-${item.id}">
+        ${posterUrl
+          ? `<img src="${posterUrl}" alt="${item.title}">`
+          : `<div class="poster-placeholder">${item.title}</div>`}
+        <span class="issue-tag">#${String(item.order).padStart(2,'0')}</span>
+        <span class="type-tag">${item.type}</span>
+        ${isSeen ? `<span class="seen-badge">VU</span>` : ""}
+      </div>
+      <div class="tile-info">
+        <div class="tile-title">${item.title}</div>
+        <div class="tile-meta"><span>${item.year}</span><span>${formatDuration(item.duration)}</span></div>
+        <button class="toggle-btn" data-toggle="${item.id}">${isSeen ? "Marquer à voir" : "Marquer vu"}</button>
+      </div>
+    </div>
+  `;
+}
+
+function updateProgress(){
+  const total = DATA.length;
+  const seenCount = DATA.filter(i => seenSet.has(i.id)).length;
+  const pct = total ? Math.round((seenCount/total)*100) : 0;
+  document.getElementById("progressText").textContent = `${seenCount} / ${total} visionnés`;
+  document.getElementById("progressPct").textContent = `${pct}%`;
+  document.getElementById("progressFill").style.width = `${pct}%`;
+}
+
+/* ---------- EVENTS ---------- */
+document.getElementById("main").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-toggle]");
+  if(!btn) return;
+  const id = btn.getAttribute("data-toggle");
+  if(seenSet.has(id)) seenSet.delete(id); else seenSet.add(id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...seenSet]));
+  render();
+});
+
+/* ---------- MODAL / SETTINGS ---------- */
+const modal = document.getElementById("settingsModal");
+document.getElementById("settingsBtn").addEventListener("click", () => {
+  document.getElementById("apiKeyInput").value = apiKey;
+  modal.classList.add("open");
+});
+document.getElementById("closeModalBtn").addEventListener("click", () => modal.classList.remove("open"));
+modal.addEventListener("click", (e) => { if(e.target === modal) modal.classList.remove("open"); });
+
+document.getElementById("saveKeyBtn").addEventListener("click", () => {
+  apiKey = document.getElementById("apiKeyInput").value.trim();
+  localStorage.setItem(APIKEY_STORAGE, apiKey);
+  modal.classList.remove("open");
+  loadPosters(applyFilters(), true);
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if(confirm("Réinitialiser toute ta progression (films/séries marqués vus) ? Cette action est irréversible.")){
+    seenSet = new Set();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+    render();
+    modal.classList.remove("open");
+  }
+});
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const backup = { seen:[...seenSet], exportedAt:new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "marvel-watchlist-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try{
+      const backup = JSON.parse(ev.target.result);
+      if(Array.isArray(backup.seen)){
+        seenSet = new Set(backup.seen);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...seenSet]));
+        render();
+        modal.classList.remove("open");
+        alert("Progression importée !");
+      } else {
+        alert("Fichier invalide.");
+      }
+    }catch(err){
+      alert("Impossible de lire ce fichier.");
+    }
+  };
+  reader.readAsText(file);
+});
+
+/* ---------- TMDB POSTERS ---------- */
+async function loadPosters(items, force=false){
+  if(!apiKey) return;
+  const toFetch = items.filter(i => force || !posterCache[`${i.title}__${i.year}`]);
+  const chunks = [];
+  for(let i=0;i<toFetch.length;i+=8) chunks.push(toFetch.slice(i,i+8));
+
+  for(const chunk of chunks){
+    await Promise.all(chunk.map(item => fetchPoster(item)));
+  }
+  localStorage.setItem(POSTER_CACHE_KEY, JSON.stringify(posterCache));
+}
+
+async function fetchPoster(item){
+  const cacheKey = `${item.title}__${item.year}`;
+  try{
+    const isTv = item.type === "série";
+    const endpoint = isTv ? "tv" : "movie";
+    const yearParam = isTv ? `&first_air_date_year=${item.year}` : `&year=${item.year}`;
+    const cleanTitle = item.title.replace(/\s*\(Saison.*?\)/,"").replace("*","");
+    const url = `https://api.themoviedb.org/3/search/${endpoint}?api_key=${apiKey}&query=${encodeURIComponent(cleanTitle)}${yearParam}&language=fr-FR`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("TMDB error");
+    const data = await res.json();
+    const result = data.results && data.results[0];
+    if(result && result.poster_path){
+      posterCache[cacheKey] = `https://image.tmdb.org/t/p/w500${result.poster_path}`;
+      const wrap = document.getElementById(`poster-${item.id}`);
+      if(wrap){
+        const img = document.createElement("img");
+        img.src = posterCache[cacheKey];
+        img.alt = item.title;
+        wrap.prepend(img);
+        const placeholder = wrap.querySelector(".poster-placeholder");
+        if(placeholder) placeholder.remove();
+      }
+    }
+  }catch(err){
+    // Silent fail: le placeholder texte reste affiché
+  }
+}
+
+/* ---------- INIT ---------- */
+render();
+if(apiKey) loadPosters(applyFilters());
+</script>
+
+</body>
+</html>
